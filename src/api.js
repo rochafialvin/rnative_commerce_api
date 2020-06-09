@@ -6,6 +6,10 @@ const conn = require('./config/db')
 const isEmail = require('validator/lib/isEmail')
 const bcrypt = require('bcrypt')
 const jwt = require('./config/token')
+const path = require('path')
+const auth = require('./config/auth')
+const multer = require('multer')
+const sharp = require('sharp')
 
 app.use(cors())
 app.use(express.json())
@@ -66,5 +70,50 @@ app.post('/user/login', (req, res) => {
    })
 
 })
+
+// MULTER
+const avatarDirectory = path.join(__dirname, 'assets/avatar')
+
+const upload = multer({
+   // storage: storage,
+   limits: {
+       fileSize: 10000000 // Byte , default 1MB
+   },
+   fileFilter(req, file, cb) {
+       if(!file.originalname.match(/\.(jpg|jpeg|png)$/)){ // will be error if the extension name is not one of these
+           return cb(new Error('Please upload image file (jpg, jpeg, or png)')) 
+       }
+
+       cb(undefined, true)
+   }
+})
+
+// POST AVATAR
+app.post('/user/avatar', auth, upload.single('avatar'), async (req,res) => {
+    
+   try {
+       const sql = `UPDATE users SET avatar = ? WHERE username = ?`
+       const fileName = `${req.user.username}-avatar.png`
+       const data = [fileName, req.user.username]
+       const final = await sharp(req.file.buffer).resize(200).png().toFile(`${avatarDirectory}/${fileName}`)
+
+       conn.query(sql, data, (err, result) => {
+           if (err) return res.status(500).send(err)
+
+           res.status(200).send({message: fileName})
+
+       })
+   } catch (error) {
+       res.status(500).send(error.message)
+   }
+   
+}, (err, req, res, next) => { // it should declare 4 parameters, so express know this is function for handling any uncaught error
+   res.status(400).send(err.message)
+})
+
+// READ AVATAR
+
+
+
 
 app.listen(port, () => console.log('API is Running'))
