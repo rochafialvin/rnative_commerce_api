@@ -21,6 +21,7 @@ app.get('/', (req, res) => {
 // REGISTER
 app.post('/user', (req, res) => {
    const sql = `INSERT INTO users SET ?`
+    // data = {username, name, email, password}
    const data = req.body
 
    // cek email
@@ -71,6 +72,17 @@ app.post('/user/login', (req, res) => {
 
 })
 
+// GET PROFILE
+app.get('/user', auth, (req, res) => {
+
+    // req.user = {id, username, name, email, avatar}
+    res.status(200).send({
+        user: req.user,
+        avatarlink: `http://localhost:2020/user/avatar/${req.user.avatar}`
+    })
+
+})
+
 // MULTER
 const avatarDirectory = path.join(__dirname, 'assets/avatar')
 
@@ -112,7 +124,21 @@ app.post('/user/avatar', auth, upload.single('avatar'), async (req,res) => {
 })
 
 // READ AVATAR
+app.get('/user/avatar/:fileName', (req, res) => {
+    var options = { 
+        root: avatarDirectory // Direktori foto disimpan
+    };      
+    
+    var fileName = req.params.fileName;
+    
+    res.status(200).sendFile(fileName, options, function (err) {
+        if (err) {
+            return res.status(404).send({message: "Image not found"})
+        } 
 
+        console.log('Sent:', fileName);
+    });
+})
 
 
 
