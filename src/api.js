@@ -83,6 +83,31 @@ app.get('/user', auth, (req, res) => {
 
 })
 
+// UPDATE PROFILE
+app.patch('/user/profile', auth, (req, res) => {
+    const sql = `UPDATE users SET ? WHERE id = ?;`
+    // data[0] = {name, email, password}
+    // data[1] = 12
+    const data = [req.body, req.user.id]
+
+    // cek email
+   if(!isEmail(data[0].email)) return res.status(400).send({message: "Email is not valid"})
+
+    // Jika user mengirim password baru / Edit password
+    if(data[0].password){
+        data[0].password = bcrypt.hashSync(data[0].password, 8)
+    } else {
+        delete data[0].password
+    }
+
+    conn.query(sql, data, (err, result) => {
+        if(err) return res.status(500).send(err)
+
+        res.status(201).send({message: 'Update berhasil'})
+    })
+
+})
+
 // MULTER
 const avatarDirectory = path.join(__dirname, 'assets/avatar')
 
@@ -102,7 +127,7 @@ const upload = multer({
 
 // POST AVATAR
 app.post('/user/avatar', auth, upload.single('avatar'), async (req,res) => {
-    
+
    try {
        const sql = `UPDATE users SET avatar = ? WHERE username = ?`
        const fileName = `${req.user.username}-avatar.png`
