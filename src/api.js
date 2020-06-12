@@ -10,6 +10,7 @@ const path = require('path')
 const auth = require('./config/auth')
 const multer = require('multer')
 const sharp = require('sharp')
+const shortid = require('shortid')
 
 app.use(cors())
 app.use(express.json())
@@ -108,7 +109,7 @@ app.patch('/user/profile', auth, (req, res) => {
 
 })
 
-// MULTER
+// AVATAR
 const avatarDirectory = path.join(__dirname, 'assets/avatar')
 
 const upload = multer({
@@ -164,6 +165,58 @@ app.get('/user/avatar/:fileName', (req, res) => {
         console.log('Sent:', fileName);
     });
 })
+
+
+// PRODUCTS
+const productsDirectory = path.join(__dirname, 'assets/products')
+
+const product = multer({
+   // storage: storage,
+   limits: {
+       fileSize: 10000000 // Byte , default 1MB
+   },
+   fileFilter(req, file, cb) {
+       if(!file.originalname.match(/\.(jpg|jpeg|png)$/)){ // will be error if the extension name is not one of these
+           return cb(new Error('Please upload image file (jpg, jpeg, or png)')) 
+       }
+
+       cb(undefined, true)
+   }
+})
+
+app.post('/product', auth, product.single("picture"),  (req, res) => {
+    try {
+        // {name, description, stock, price} = req.body
+        // {picture} = req.file
+        const sqlInsert = `INSERT INTO products SET ?`
+        const dataInsert = {...req.body, user_id : req.user.id}
+
+        // insert semua data text
+        conn.query(sqlInsert, dataInsert,async (err, result) => {
+            if (err) return res.status(500).send(err)
+            
+            // Generate file name
+            const fileName = `${shortid.generate()}.png`
+            // Simpan gambar
+            await sharp(req.file.buffer).resize(300).png().toFile(`${productsDirectory}/${fileName}`)
+            
+            const sqlUpdate = `UPDATE products SET picture = ? WHERE id = ?`
+            const dataUpdate = [fileName, result.insertId]
+            
+            // Simpan nama gambar
+            conn.query(sqlUpdate, dataUpdate, (err, result) => {
+                if (err) return res.status(500).send(err)
+
+                res.status(200).send({message: "Insert data berhasil"})
+            })
+
+        })
+    } catch (err) {
+        es.status(500).send(err)
+    }
+})
+
+
 
 
 
