@@ -3,7 +3,9 @@ const jwt = require('../token')
 
 let auth = (req, res, next) => {
    try {
+      // token = askjlasgiasasas.asdasdasd.asdasd
       let token = req.header('Authorization')
+      // decoded = {id: 67}
       let decoded = jwt.verify(token)
    
       let sqlToken = `SELECT token FROM tokens WHERE token = '${token}'`
@@ -17,7 +19,7 @@ let auth = (req, res, next) => {
          conn.query(sql, (err, result ) => {
             if (err) return res.status(500).send(err)
     
-            req.user = result[0]
+            req.user= result[0]
             next()
         })
       })
@@ -28,3 +30,7 @@ let auth = (req, res, next) => {
 }
 
 module.exports = auth
+
+
+password = "abcdkUjs34Mk"
+salt = "kUjs34Mk"

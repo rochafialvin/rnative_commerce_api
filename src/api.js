@@ -20,6 +20,7 @@ app.get('/', (req, res) => {
 })
 
 // REGISTER
+// path
 app.post('/user', (req, res) => {
    const sql = `INSERT INTO users SET ?`
     // data = {username, name, email, password}
@@ -184,6 +185,7 @@ const product = multer({
    }
 })
 
+// POST PRODUCT
 app.post('/product', auth, product.single("picture"),  (req, res) => {
     try {
         // {name, description, stock, price} = req.body
@@ -214,6 +216,35 @@ app.post('/product', auth, product.single("picture"),  (req, res) => {
     } catch (err) {
         es.status(500).send(err)
     }
+})
+
+// GET OWN PRODUCTS
+app.get('/products/me', auth, (req, res) => {
+    const sqlSelect = `SELECT * FROM products WHERE user_id = ${req.user.id}`
+
+    conn.query(sqlSelect, (err, result) => {
+        if(err) return res.status(500).send(err)
+
+        res.status(200).send(result)
+    })
+    
+})
+
+// READ PRODUCT IMAGE
+app.get('/product/picture/:fileName', (req, res) => {
+    var options = { 
+        root: productsDirectory // Direktori foto disimpan
+    };      
+    
+    var fileName = req.params.fileName;
+    
+    res.status(200).sendFile(fileName, options, function (err) {
+        if (err) {
+            return res.status(404).send({message: "Image not found"})
+        } 
+
+        console.log('Sent:', fileName);
+    });
 })
 
 
