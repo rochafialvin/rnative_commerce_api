@@ -221,7 +221,24 @@ app.post('/product', auth, product.single("picture"),  (req, res) => {
     }
 })
 
-// GET OWN PRODUCTS
+// READ ALL PRODUCTS
+app.get('/products', auth, (req, res) => {
+    const sqlSelect = `
+        SELECT 
+            u.id 'usrId' , u.name 'usrName', u.avatar 'usrAvatar',
+            p.id, p.name , p.picture, p.description, p.stock, p.price
+        FROM users u
+        JOIN products p ON u.id = p.user_id WHERE u.id != ${req.user.id}
+    `
+
+    conn.query(sqlSelect, (err, result) => {
+        if(err) return res.status(500).send(err)
+        
+        res.status(200).send(result)
+    })
+})
+
+// READ OWN PRODUCTS
 app.get('/products/me', auth, (req, res) => {
     const sqlSelect = `SELECT * FROM products WHERE user_id = ${req.user.id}`
 
