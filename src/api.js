@@ -167,6 +167,9 @@ app.get('/user/avatar/:fileName', (req, res) => {
     });
 })
 
+//////////////////////
+// P R O D U C T S //
+/////////////////////
 
 // PRODUCTS
 const productsDirectory = path.join(__dirname, 'assets/products')
@@ -224,7 +227,7 @@ app.get('/products/me', auth, (req, res) => {
 
     conn.query(sqlSelect, (err, result) => {
         if(err) return res.status(500).send(err)
-
+        
         res.status(200).send(result)
     })
     
@@ -242,11 +245,20 @@ app.get('/product/picture/:fileName', (req, res) => {
         if (err) {
             return res.status(404).send({message: "Image not found"})
         } 
-
+        
         console.log('Sent:', fileName);
     });
 })
 
+// READ DETAIL PRODUCT
+app.get('/product/:id', auth, (req, res) => {
+    const sqlSelect = `SELECT * FROM products WHERE id = ${req.params.id}`
+    conn.query(sqlSelect, (err, result) => {
+        if(err) return res.status(500).send(err)
+        
+        res.status(200).send(result[0])
+    })
+})
 
 
 
