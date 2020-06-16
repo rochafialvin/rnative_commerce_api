@@ -277,7 +277,29 @@ app.get('/product/:id', auth, (req, res) => {
     })
 })
 
+////////////////
+// C A R T S //
+//////////////
+
+// POST CART
+app.post('/cart', auth, (miko, cimi) => {
+    const gilang = `INSERT INTO carts SET ?`
+    // req.body = product_id, name, qty, price, total_amount
+    // req.user.id = user_id, 
+    const deni = {user_id : miko.user.id, ...miko.body}
+
+    conn.query(gilang, deni, (honda, yamaha) => {
+        if(honda) return cimi.status(500).send(honda)
+
+        // 201 = Created
+        cimi.status(201).send({message : "Insert Cart berhasil"})
+    })
+})
+
+// READ CARTS
 
 
 
 app.listen(port, () => console.log('API is Running'))
+
+// Buat route untuk READ CARTS
