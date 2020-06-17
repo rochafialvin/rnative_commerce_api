@@ -48,26 +48,26 @@ create table carts(
 create table transactions(
 	id int auto_increment primary key,
 	user_id int ,
-	seller_id int ,
 	total_amount int,
 	created_at datetime not null default now(),
 	updated_at datetime not null default now() on update now(),
-	constraint FK_TrxUserId foreign key (user_id) references users(id) on update cascade on delete set null,
-	constraint FK_TrxSellerId foreign key (seller_id) references users(id) on update cascade on delete set null
+	constraint FK_TrxUserId foreign key (user_id) references users(id) on update cascade on delete set null
 );
 
 create table detail_transaction(
 	id int auto_increment primary key,
 	trx_id int ,
+	seller_id int,
 	product_id int,
-    name varchar(100),
+   name varchar(100),
 	qty int,
 	price int,
-	total_amount,
+	total_amount int,
 	created_at datetime not null default now(),
 	updated_at datetime not null default now() on update now(),
 	constraint FK_TrxDetailTrxId foreign key (trx_id) references transactions(id) on update cascade on delete set null,
-	constraint FK_TrxDetailProductId foreign key (product_id) references products(id) on update cascade on delete set null
+	constraint FK_TrxDetailProductId foreign key (product_id) references products(id) on update cascade on delete set null,
+	constraint FK_TrxDetailSellerId foreign key (seller_id) references users(id) on update cascade on delete set null
 );
 
 

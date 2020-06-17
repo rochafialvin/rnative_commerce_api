@@ -282,22 +282,31 @@ app.get('/product/:id', auth, (req, res) => {
 //////////////
 
 // POST CART
-app.post('/cart', auth, (miko, cimi) => {
-    const gilang = `INSERT INTO carts SET ?`
+app.post('/cart', auth, (req, res) => {
+    const sqlInsert = `INSERT INTO carts SET ?`
     // req.body = product_id, name, qty, price, total_amount
     // req.user.id = user_id, 
-    const deni = {user_id : miko.user.id, ...miko.body}
+    const dataInsert = {user_id : req.user.id, ...req.body}
 
-    conn.query(gilang, deni, (honda, yamaha) => {
-        if(honda) return cimi.status(500).send(honda)
+    conn.query(sqlInsert, dataInsert, (err, result) => {
+        if(err) return res.status(500).send(err)
 
         // 201 = Created
-        cimi.status(201).send({message : "Insert Cart berhasil"})
+        res.status(201).send({message : "Insert Cart berhasil"})
     })
 })
 
 // READ CARTS
+app.get('/carts', auth, (req, res) => {
+    const sqlSelect = `SELECT * FROM carts WHERE user_id = ${req.user.id}`
 
+    conn.query(sqlSelect, (err, result) => {
+        if(err) return res.status(500).send(err)
+
+        // 200 = OK
+        res.status(200).send(result)
+    })
+})
 
 
 app.listen(port, () => console.log('API is Running'))
