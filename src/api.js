@@ -284,8 +284,8 @@ app.get('/product/:id', auth, (req, res) => {
 // POST CART
 app.post('/cart', auth, (req, res) => {
     const sqlInsert = `INSERT INTO carts SET ?`
-    // req.body = product_id, name, qty, price, total_amount
-    // req.user.id = user_id, 
+    // req.body = product_id : 12, seller_id : 99, name : tamiya, qty : 3, price : 20, total_amount : 60
+    // req.user.id = user_id, 98
     const dataInsert = {user_id : req.user.id, ...req.body}
 
     conn.query(sqlInsert, dataInsert, (err, result) => {
@@ -306,6 +306,56 @@ app.get('/carts', auth, (req, res) => {
         // 200 = OK
         res.status(200).send(result)
     })
+})
+
+//////////////////////////////
+// T R A N S A C T I O N  S //
+/////////////////////////////
+
+app.post('/transaction', auth, (req, res) => {
+
+    // {user_id, total_amount}
+    // Add to transactions
+        // id 87 : 3 products
+    const sqlInsertTrx = `INSERT INTO transactions SET ?`
+    // req.body.transaction = total_amount
+    const dataInsertTrx = {
+        user_id : req.user.id,
+        total_amount: req.body.total_amount
+    }
+
+    conn.query(sqlInsertTrx, dataInsertTrx, (err, result) => {
+        if(err) return res.status(500).send(err)
+
+
+        // Add to detail_transactions
+        // id 13 trx id : 87
+        // id 14 trx id : 87
+        // id 15 trx id : 87
+        // req.body.carts
+        const sqlInsertTrxDetail = `
+            INSERT INTO 
+                detail_transaction(trx_id, seller_id, product_id, name, qty, price, total_amount)
+            VALUES ?
+        `
+        const dataInsertTrxDetail = [
+            // {trx_id, seller_id, product_id, name, qty, price total_amount}
+            [7, 2, 11,"Keychron 2", 2, 120, 240],
+            [7, 3, 7,"Divine Rapier", 1, 178, 178],
+            [7, 3, 12,"Akko White", 2, 120, 240]
+        ]
+
+        conn.query(sqlInsertTrxDetail, [dataInsertTrxDetail], (err, result) => {
+            if(err) return res.status(500).send(err)
+
+            res.status(201).send("Insert Trx Berhasil")
+
+        })
+
+
+    })
+
+
 })
 
 

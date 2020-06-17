@@ -54,7 +54,7 @@ create table transactions(
 	constraint FK_TrxUserId foreign key (user_id) references users(id) on update cascade on delete set null
 );
 
-create table detail_transaction(
+create table detail_transactions(
 	id int auto_increment primary key,
 	trx_id int ,
 	seller_id int,
