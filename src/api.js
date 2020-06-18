@@ -312,6 +312,7 @@ app.get('/carts', auth, (req, res) => {
 // T R A N S A C T I O N  S //
 /////////////////////////////
 
+// Post Trx
 app.post('/transaction', auth, (req, res) => {
 
     // {user_id, total_amount}
@@ -355,13 +356,32 @@ app.post('/transaction', auth, (req, res) => {
             })
 
         })
-
-
-
     })
 
-
 })
+
+// Read Trx Buy
+app.get('/transactions/buy', auth, (req, res) => {
+    const sqlSelect = `SELECT * FROM transactions WHERE user_id = ${req.user.id} `
+
+    conn.query(sqlSelect, (err, result) => {
+        if(err) return res.status(500).send(err)
+
+        res.status(200).send(result)
+    })
+})
+
+// Read Trx Jual
+app.get('/transactions/sell', auth, (req, res) => {
+    const sqlSelect = `SELECT * FROM detail_transaction WHERE seller_id = ${req.user.id} `
+
+    conn.query(sqlSelect, (err, result) => {
+        if(err) return res.status(500).send(err)
+
+        res.status(200).send(result)
+    })
+})
+
 
 
 app.listen(port, () => console.log('API is Running at ' + port))
