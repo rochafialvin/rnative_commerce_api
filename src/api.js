@@ -327,7 +327,6 @@ app.post('/transaction', auth, (req, res) => {
     conn.query(sqlInsertTrx, dataInsertTrx, (err, result) => {
         if(err) return res.status(500).send(err)
 
-
         // Add to detail_transactions
         // id 13 trx id : 87
         // id 14 trx id : 87
@@ -338,19 +337,25 @@ app.post('/transaction', auth, (req, res) => {
                 detail_transaction(trx_id, seller_id, product_id, name, qty, price, total_amount)
             VALUES ?
         `
-        const dataInsertTrxDetail = [
-            // {trx_id, seller_id, product_id, name, qty, price total_amount}
-            [7, 2, 11,"Keychron 2", 2, 120, 240],
-            [7, 3, 7,"Divine Rapier", 1, 178, 178],
-            [7, 3, 12,"Akko White", 2, 120, 240]
-        ]
+        let trx_id = result.insertId
+        // {trx_id, seller_id, product_id, name, qty, price total_amount}
+        const dataInsertTrxDetail = req.body.carts.map(cart => (
+            [trx_id, cart.seller_id, cart.product_id, cart.name, cart.qty, cart.price, cart.total_amount]
+        ))
 
         conn.query(sqlInsertTrxDetail, [dataInsertTrxDetail], (err, result) => {
             if(err) return res.status(500).send(err)
+            
+            // Delete carts
+            const sqlDeleteCarts = `DELETE FROM carts WHERE user_id = ${req.user.id}`
+            conn.query(sqlDeleteCarts, (err, results) => {
+                if(err) return res.status(500).send(err)
 
-            res.status(201).send("Insert Trx Berhasil")
+                res.status(201).send("Insert Trx Berhasil")
+            })
 
         })
+
 
 
     })
@@ -359,6 +364,6 @@ app.post('/transaction', auth, (req, res) => {
 })
 
 
-app.listen(port, () => console.log('API is Running'))
+app.listen(port, () => console.log('API is Running at ' + port))
 
 // Buat route untuk READ CARTS
